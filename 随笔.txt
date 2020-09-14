@@ -23,6 +23,8 @@
 
 	线程安全的ConcurrentHashMap：
 		https://blog.csdn.net/woshimaxiao1/article/details/83901113
+	有序的LinkedHashMap:
+		https://blog.csdn.net/yinni11/article/details/88663713
 
 7.jvm
 
@@ -161,6 +163,18 @@
 	char和varchar的区别：char列长度固定为创建表时执行的长度，范围是1到255，当char被存储时，用空格填充到指定长度，检索char需要删除尾随空格。char的查询速度
 		要比varchar快，因为还要对varchar进行语法分析，确定这个字段是多少位的。
 		varchar是可变长度字符串，不管初始时预分配字段长度为多少，存储时长度与实际字符串长度一致。
+	BLOB和TEXT区别：
+		BLOB是一个二进制对象，可以容纳可变数量的数据，区分大小写。而TEXT不区分大小写。
+	分页查询：select * from table_name where limit 10,30;
+	now()函数和current_date()区别：now()显示当前年份，精确到秒。current_date()显示年份精确到日。
+	mysql中非标准字符串类型：tinytext、text、mediumtext、longtext。
+	mysql支持事务吗？在InnoDB引擎下关闭自动提交，使用set autocommit = 0，就需要我们手动提交或回滚更改的操作。
+	优化相关：（1）设计良好的数据结构，允许部分数据冗余，尽量避免连接查询。（2）选择合适的存储引擎和表字段类型，适当的添加索引。
+		（3）数据库主从读写分离（主库负责写，从库负责读）https://blog.csdn.net/why15732625998/article/details/80463041。
+		（4）按规律分表，减少单表数据量提高查询速度。（5）添加缓存机制。（6）编写执行效率较高的sql。
+	什么情况下设置了索引但无法使用？（1）对于like语句，以"%"或者"_"开头不会使用索引，结尾会使用索引。（2）or的前后没有同时使用索引。
+	建立索引的原则：（1）在频繁使用的、对于缩小查询范围有很大帮助的字段建立索引。（2）在需要排序的字段上建立索引。
+	什么情况下不适合建索引？（1）查询中很少涉及的列或重复值比较多的列不宜建立索引。（2）特殊的数据类型不宜建立索引，如text等。
 
 
 
