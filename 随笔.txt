@@ -200,6 +200,13 @@
 			原子数组：AtomicIntegerArray、AtomicLongArray、AtomicReferenceArray。
 			解决ABA问题的原子类：AtomicMarkableReference（通过引入boolean来反映有没有被改变过）、AtomicStampedReference（通过引入int累加来反映有没有被改变过）。
 	Lock接口是什么？Lock接口是Synchronized的扩展版，比同步方法和同步块提供了更具扩展性的锁操作。
+	线程的5种状态：
+		新建状态（New）：用new 语句新建的线程处于新建状态，此时它和其它Java对象一样，仅在对中被分配了内存。
+		就绪状态（Runnable）：当一个线程对象被创建后，其它线程调用start()方法，该线程就处于就绪状态。Java虚拟机为它创建方法调用栈和程序计数器。
+			处于这个状态的线程位于可运行池中，等待CPU的使用权。
+		运行状态（Running）：线程占用CPU，执行程序代码，只有处于就绪状态的线程才能转为运行状态。
+		阻塞状态（Blocked）：阻塞状态是线程因为某些原因放弃CPU，暂时停止运行。线程处于阻塞状态时，JVM不会给线程分配CPU，直到线程重新进入就绪状态，才有机会转为运行状态。
+		死亡状态（Dead）：当线程退出run()方法时，就进入死亡状态，该线程结束生命周期。
 			
 
 
