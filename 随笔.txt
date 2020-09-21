@@ -17,17 +17,28 @@
 	https://blog.csdn.net/woshimaxiao1/article/details/83661464
 
 	jdk1.7 Entry数组主干+链表
-	jdk1.8 Entry数组主干+链表+红黑树（使用红黑树的目的是加快查询效率。链表长度大于等于8时，才会转为红黑树维护，因为链表的插入效率大于红黑树）
+	jdk1.8 Entry数组主干+链表+红黑树（使用红黑树的目的是加快查询效率。链表长度大于等于8（哈希碰撞较大）时，才会转为红黑树维护，因为链表的插入效率大于红黑树）
 	
 	HashMap是非线程安全的（当get时进行put会产生共享资源访问争抢，导致拿到的不是正确的结果）
 
 	线程安全的ConcurrentHashMap：
 		https://blog.csdn.net/woshimaxiao1/article/details/83901113
+		并发度默认为16，也就是segment的大小
 	有序的LinkedHashMap:
 		https://blog.csdn.net/yinni11/article/details/88663713
 
 7.jvm
+	Java虚拟机组成：类装载子系统、运行时数据区、字节码执行引擎。
+		查看Java字节码指令文件，可以在字节码文件目录下使用命令，例如：javap -c User.class > User.txt
+	Java内存模型（运行时数据区）组成：堆、栈、方法区（元空间）、本地方法栈、程序计数器。
+		栈（线程栈）：Java虚拟机会为每个线程分配一个栈内存区域，栈中又会为线程执行的每个方法分配一个独立的内存区域（方法栈帧，FILO先进后出），方法执行过后对应的方法栈帧的内存区域
+			也将会被销毁（出栈）。方法栈帧内的组成：局部变量表（放置方法内的局部变量，）、操作数栈（放置方法执行中的操作数）、动态链接、方法出口。
+			
+		堆：
+		程序计数器：记录当前线程正在运行的JVM指令码的位置（行号），是每个线程独有的。当线程上下文切换时，用于找到之前线程的执行位置。
 
+		栈空间用光会触发StackOverFlowError，堆空间和常量池空间不足会触发OutOfMemoryError。String str = new String("abc"); 这个语句中str变量放置在栈中，new创建出来的字符串对象放在
+			堆中，而"abc"字符串常量是放在方法区的。
 8.springmvc
 	https://blog.csdn.net/a745233700/article/details/80963758
 
@@ -84,7 +95,7 @@
 		返回值：
 			execute没有返回值。submit有返回值，通过返回的Future对象的get()方法获取线程执行结果。
 		异常处理：
-			execute可以对异常进行正常捕获。submit如果不使用get()方法获取返回结果，会吃掉异常。	
+			execute可以对异常进行正常捕获。submit如果不使用get()方法获取返回结果，会吃掉异常。
 
 13.Kafka
 	结构：
@@ -200,6 +211,7 @@
 			原子数组：AtomicIntegerArray、AtomicLongArray、AtomicReferenceArray。
 			解决ABA问题的原子类：AtomicMarkableReference（通过引入boolean来反映有没有被改变过）、AtomicStampedReference（通过引入int累加来反映有没有被改变过）。
 	Lock接口是什么？Lock接口是Synchronized的扩展版，比同步方法和同步块提供了更具扩展性的锁操作。
+	什么是多线程的上下文切换？是指CPU控制权由一个已经正在运行的线程切换到另一个就绪并等待获取CPU执行权的线程的过程。
 			
 
 
