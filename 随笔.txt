@@ -96,6 +96,7 @@
 			年龄判断规则，当一批对象的总大小大于这块Survivor区大小的50%时（此时Survivor区大小大概为100M），这些对象就会直接进入到老年代，这样老年代几分钟就会被放满，从而触发full gc，针对
 			这种情况进行优化，不能将这批对象直接挪到老年代。参数中增加设置年轻代大小，如下：
 				java -Xms3072M -Xmx3072M -Xmn2048M -Xss1M -XX:MetaspaceSize=256M -XX:MaxMetaspaceSize=256M -jar microservice-eureka-server.jar
+	
 	判断对象存活算法：
 		引用计数法：给每个对象添加一个引用计数器，每当有其它对象引用时，计数器就加1，引用失效时计数器减1，当该对象的引用计数为0的时候，则判定该对象可以被回收了。没有
 			被Java采用，因为它没有解决对象的相互循环引用问题。
@@ -270,7 +271,7 @@
 			LinkedBlockingQueue，链表实现的有界阻塞队列。PriorityBlockingQueue，支持优先级的无解阻塞队列。
 		threadFactory：创建线程的工厂类。
 		handler：饱和策略。当阻塞队列已满并且线程均已开启，说明线程池已经处于饱和状态。
-			分类：AbortPolicy：直接拒绝所有提价的任务，并抛出异常。CallerRunsPolicy：只用调用者所在的线程来执行任务。
+			分类：AbortPolicy：直接拒绝所有提交的任务，并抛出异常。CallerRunsPolicy：只用调用者所在的线程来执行任务。
 			DiscardPolicy：不处理直接丢弃掉任务。DiscardOldestPolicy：丢弃掉阻塞队列中存放时间最久的任务，执行当前任务。
 	线程执行submit与execute的区别：
 		可接收的任务类型：
@@ -391,7 +392,7 @@
 	主从复制（redis sentinel），用于实现高可用，在master宕机时会自动将slave提升为主节点，继续提供服务。
 	集群（redis cluster），用于实现扩展性，集群中各几点分配16384个哈希槽。在单个redis内存不足时，使用redis cluster进行分片存储。
 	什么情况下集群不可用？集群中任一主节点不可用并且其没有相应从节点顶上，则整个集群就会不可用。
-	集群中哈希槽的概念？redis集群中有16384个哈希槽，每个key通过CRC校验后对18384取模来决定放置在哪个哈希槽，集群中的每一个节点负责一部分哈希槽。
+	集群中哈希槽的概念？redis集群中有16384个哈希槽，每个key通过CRC校验后对16384取模来决定放置在哪个哈希槽，集群中的每一个节点负责一部分哈希槽。
 	redis事务相关的命令：
 		multi、exec、discard、watch	
 	如何将一些固定已知前缀的key全部找出来？使用keys指令扫描指定模式的key列表。由于redis是单线程的，keys操作会导致线程阻塞一段时间，线上服务会停顿，知道指令执行完毕，
@@ -404,7 +405,7 @@
 
 18.MySQL
 	mysql的5中引擎：ISAM、MyISAM、Heap、Merge、InnoDB。
-	MyISAM和InnovationDB区别：
+	MyISAM和InnoDB区别：
 		MyISAM不支持事务，但是每次查询都是原子的。支持表级锁，每个操作都是对表加锁。一个MyISAM表对应三个文件：表结构文件、数据文件、索引文件。
 			采用非聚集索引，索引文件的数据域指向数据文件的指针。
 		InnoDB支持事务（ACID特性），支持事务的四种隔离级别（解决事务并发问题，脏读、不可重复读、幻读）。支持行级锁和外键约束，可以支持写并发。
@@ -437,7 +438,7 @@
 		1.普通索引 create index index_name on table_name(col(length));	//字符串类型才能执行索引长度
 		2.唯一索引 索引的值必须唯一，允许有空值。create unique index_name on table_name(col(length));
 		3.主键索引 一般是在建表时同时创建主键索引。primary key ('id')
-		4.组合索引 多个字段上创建的索引，查询条件使用了第一个字段时索引才会被使用，同时服务最左前缀原则。create index index_name on table_name(col1,,col2,col3);
+		4.组合索引 多个字段上创建的索引，查询条件使用了第一个字段时索引才会被使用，同时满足最左前缀原则。create index index_name on table_name(col1,,col2,col3);
 		5.全文索引 主要用来查找文本中的关键字，而不是直接与索引中的值比较，配合match、against使用，只能在char、varchar、text上创建全文索引。create fulltext index index_name on table_name(content);
 	
 	事物的并发问题：
@@ -548,7 +549,7 @@
 			Serializable接口，所以支持快速访问、克隆、序列化。扩容机制首先扩充为原始容量的1.5倍。扩容后是通过数组元素的拷贝来确保元素的准确性，所以尽量减少扩容，初始化时给定初始大小。
 		Vector：线程安全，和ArrayList继承同样的接口，具有相同的特性，默认扩展因子为1倍，因为使用了synchronized修饰，效率较ArrayList低。
 			Vector和ArrayList都是以数组方式存储元素，允许按序号索引元素，但是插入元素设计元素移动等内存操作，所以索引数据快而插入速度慢。
-		LinkList：基于双向循环链表设计的，可以被当做堆栈、队列、双端队列进行操作。检索速度较慢，插入速度较快。
+		LinkList：基于双向循环链表设计的，有序，可以被当做堆栈、队列、双端队列进行操作。检索速度较慢，插入速度较快。
 	a = a+b和a += b的区别：+= 操作隐式地将加操作的结果类型转换为持有结果地类型。
 	3*0.1 == 0.3 返回true还是false？返回false，浮点数不能完全精确地标识出来。
 		
