@@ -578,7 +578,210 @@
 				
 		（3）AIO：异步非阻塞，适用于连接数目较多且连接较长的应用，如相册系统等。 
 		
+
+1、写一个单例设计模式？
+	public class LazySingleton {
+		private volatile static LizySingleton instance;
+		private LazySingleton() {}
+		public static LazySingleton getInsatnce() {
+			if(instance == null) {
+				synchronized(LazySingleton.class) {
+					//防止并发访问时重复进行实例化此单例对象
+					if(instance == null) {
+						instance = new LazySingleton();
+					}
+				}
+			}
+			return instance;
+		}
+	}
+	
+2、简述spring bean的生命周期？
+	Servlet的声明周期：实例化、初始化init、接收请求执行service、销毁destory。
+	spring声明周期级别的接口BeanPostProcessor作用于bean初始化阶段的前后，一些自动注入和AOP的实现就是基于此接口,需要bean实现此接口。
+		第一步是容器启动时执行bean的构造器初始化bean；
+		第二步使用setter方法注入bean的属性（依赖注入）；
+		第三步调用BeanNameAware接口的setBeanName方法，设置bean的id名称；执行BeanFactoryAware接口的setBeanFactory方法指定bean由什么工厂对象所管理；
+		第四步调用InitializingBean的afterPropertiesSet方法设置bean属性，然后执行bean的init-method属性指定的初始化方法；
+		第五步初始化成功后执行正常的bean的业务逻辑后随容器销毁bean，DisposiableBean的destory方法，然后调用bean的destory-method属性执行的销毁方法；
 		
+3、简述spring？
+	spring是作用于web开三层架构的轻量级框架，常见三种配置方式：xml配置、注解配置、基于Java的配置。其中两个核心：
+		IOC（控制反转）是将对象的创建、初始化、依赖关系等交给spring容器来管理，主要解决的是类与类之间的耦合性。其中三种注入方式：构造器注入、setter方法注入、基于注解的注入。
+		AOP（面向切面编程）：将系统中与主业务逻辑无关、却对对个对象产生影响的公共逻辑的代码抽离出来，并封装成一个可重用的模块（切面），如权限认证、日志记录、事务处理。主要解决的是方法之间的耦合性。
+			主要实现：
+				JDK基于接口的动态代理：InvocationHandler接口通过invoke()方法反射来调用目标类中的，动态的将横切逻辑和业务编织在一起（在调用业务方法前后执行横切逻辑）。然后Proxy对象利用InvocationHandler
+					接口动态创建此接口的实例，生成目标对象的代理对象。
+				CGLIB动态代理：通过生成目标对象的子类作为代理对象，在子类中对对象进行增强，如果类被声明为final类型，则无法生成代理对象（就像方法被声明为final，则会使事务无法生效）。
+
+4、BeanFactory和ApplicationContext的区别？
+	ApplicationContext接口是BeanFactory接口的子接口，都可以当做Spring的容器，控制bean的声明周期、维护bean之间的依赖关系。
+		BeanFactory采用的是延迟加载的方式来注入Bean的，即只有在使用bean时（getBean()）才会对bean进行实例化。如果bean的一个属性没有注入，只有在使用bean时才会抛出异常。
+		ApplicationContext在容器启动时就一次性创建所有的bean。
+
+5、spring bean的几种作用域？
+	singleton：默认，一个bean只有一个实例，线程不安全。
+	prototype：为每一个bean的执行提供一个实例，线程安全。
+	request：为每一个网络请求创建一个bean实例。
+	session：每个session中对应只有一个bean的实例。
+	
+6、spring如何处理并发情况下的线程安全问题（多线程环境下相同变量的访问冲突问题）？
+	一般的线程同步机制：只提供一份变量，不同的线程在访问前需要先获得该变量的锁，没有锁的线程需要排队。
+	spring采用的ThreadLocal方式：会为每一个线程提供一个独立的共享变量副本，从而隔离了多个线程对共享变量的访问冲突，可以把不安全的对象封装进ThreadLocal。
+		private ThreadLocal myThreadLocal = new ThreadLocal(); 然后使用get()、set()、remove()等操作。
+		
+7、spring事务的传播行为？
+	当多个事务同时存在时，如何处理它们之间的关系：
+		PROPAGATION_REQUIRED：如果当前没有事务，就创建一个新事务，如果当前存在事务，就加入该事务，该设置是最常用的设置。
+		PROPAGATION_SUPPORTS：支持当前事务，如果当前存在事务，就加入该事务，如果当前不存在事务，就以非事务执行。‘
+		PROPAGATION_MANDATORY：支持当前事务，如果当前存在事务，就加入该事务，如果当前不存在事务，就抛出异常。
+		PROPAGATION_REQUIRES_NEW：创建新事务，无论当前存不存在事务，都创建新事务。
+		PROPAGATION_NOT_SUPPORTED：以非事务方式执行操作，如果当前存在事务，就把当前事务挂起。
+		PROPAGATION_NEVER：以非事务方式执行，如果当前存在事务，则抛出异常。
+		PROPAGATION_NESTED：如果当前存在事务，则在嵌套事务内执行。如果当前没有事务，则按REQUIRED属性执行。
+	
+8、spring中事务的隔离级别？
+	ISOLATION_DEFAULT：默认的隔离级别，使用数据库默认的事务隔离级别。
+	ISOLATION_READ_UNCOMMITTED：读未提交，允许另外一个事务可以看到这个事务未提交的数据。
+	ISOLATION_READ_COMMITTED：读已提交，保证一个事务修改的数据提交后才能被另一事务读取，而且能看到该事务对已有记录的更新。
+ 	ISOLATION_REPEATABLE_READ：可重复读，保证一个事务修改的数据提交后才能被另一事务读取，但是不能看到该事务对已有记录的更新。
+ 	ISOLATION_SERIALIZABLE：一个事务在执行的过程中完全看不到其他事务对数据库所做的更新。
+	
+9、spring mvc中如何实现拦截器？
+		继承HandlerInterceptor接口。
+
+10、mybatis Dao接口的工作原理？
+	使用了jdk动态代理，会为Mapper接口生成代理对象Proxy，代理对象会拦截接口方法，根据方法的全限定类名+方法名定位mapper.xml中要执行的sql,然后将SQL执行结果封装成java对象返回。
+
+11、mybatis和hibernate的分页原理？
+	mybatis使用RowBounds对象的offset和limit属性进行分页，不过只是逻辑分页，先将数据加载到内存（不是一次性加载所有，不够再取，通过fetch size参数控制），然后进行分页返回。
+		想要实现物理分页：可以使用第三方分页插件。也可以手动拦截方法内待执行的sql，然后重写sql，根据dialect方言，添加对应的物理分页语句。
+	hibernate使用Query对象的firstResult和maxResults属性实现分页。是物理分页。
+	
+12、mybatis的延迟加载？
+	mybatis支持association和collection关联对象的延迟加载。原理是使用了CGLIB的动态代理，当使用延迟加载的对象时发现是null，就会单独发送事先保存的关联对象的sql将延迟对象查询出来，
+		然后完成调用。
+	hibernate也是采用的上述延迟加载的原理。配置延迟加载：lazyLoadingEnabled=true|false。
+	
+13、mybatis的一级、二级缓存？
+	一级缓存，基于HashMap的Session级别的缓存，默认打开，当Session flush或close时会清空缓存。
+	二级缓存，基于HashMap的Namespace级别的缓存。若要打开需要实体类实现Serializable接口，映射文件中配置<cache/>
+	
+14、hibernate对象的三种状态？
+	瞬时态（transient）、持久态（persistent）、脱管态（detached）。
+	
+15、过滤器（Interceptor）和拦截器的区别？
+	过滤器是用于对客户端和web资源的请求和响应进行过滤。
+	拦截器一般是根据AOP将多个模块的服务进行分离，如权限管理、日志记录等。
+	区别：
+		拦截器是基于AOP Java反射机制的，过滤器是基于函数回调；
+		拦截器不依赖Servlet容器，过滤器依赖于Servlet容器；
+		拦截器只对action请求起作用，过滤器几乎可以对所有的请求起作用；
+		拦截器可以访问action山下文、值栈里的对象，过滤器不能；
+		在action的生命周期中，拦截器可以被多次调用，过滤器只能在容器初始化时调用一次；
+	执行顺序：
+		过滤器前-->拦截器前-->action-->拦截器后-->过滤器后
+	
+16、JSR-303 bean检验？
+	https://www.cnblogs.com/huanchupkblog/p/12915268.html
+	
+	@Null	验证对象是否为空
+	@NotNull	验证对象是否为非空
+	@AssertTrue		验证Boolean对象是否为true
+	@AssertFalse		验证Boolean对象是否为false
+	@Min	验证Number和String对象是否大于等于指定的值
+	@Max	验证Number和String对象是否小于等于指定的值
+	@DecimalMin		验证Number和String对象是否小于等于指定的值，存在小数
+	@DecimalMax		验证Number和String对象是否小于等于指定的值，存在小数
+	@Size	验证对象Map、
+	
+17、spring事务？
+	特性：ACID（原子性、一致性、隔离性、持久性）。
+	事务的传播行为：
+		@Transactional(propagation=Propagation.REQUIRED)
+		
+		PROPAGATION_REQUIRED：默认，如果外层有事务，则当前事务加入到外层事务，一起提交和回滚。
+		PROPAGATION_SUPPORT：如果外层有事务，则加入该事务，如果没有，就直接以非事务的方式执行。
+	事务的隔离级别：
+		@Transactional(isolation = Isolation.READ_UNCOMMITTED)
+		
+		数据的并发问题：
+			脏读：一个事务读取到了另一个事务未提交的数据，然后另一个事务进行了回滚，则该事务读取到的就是脏数据。
+			不可重复读：一个事务在多次读取同一数据时，另一个事务在此期间对这条数据进行了更改，导致该事务前后读取的数据不一致。不可重复度侧重于修改。
+			幻读：当一个事务在读取数据时，另一个事务对数据进行了插入或者删除，当前事务就读取到了原来没有的额外记录。
+		spring事务隔离级别：
+			ISOLATION_DEFAULT：使用数据库默认的隔离级别。
+			ISOLATION_READ_UNCOMMITED：读未提交，允许读取尚未提交的数据。会产生脏读、幻读、不可重复读。
+			ISOLATION_READ_COMMITED：读提交，只能读取其它并发事务提交后的数据，可避免脏读。oracle默认。
+			ISOLATION_REPEATABLE_READ：可重复读，对同一数据多次读取结果是一致的，多次读取的过程中不允许其它事务修改。不可避免幻读。mysql默认。
+			ISOLATION_SERIALiZABLE：串行化，串行读取数据，性能较差。
+	事务回滚的规则：
+		@Transactional(rollbackFor={RuntimeException.class, Exception.class})
+	
+		发生运行时异常回滚，受查异常不回滚。
+			
+18、spring cloud各组件？
+	服务发现——Netflix Eureka
+	客服端负载均衡——Netflix Ribbon
+	断路器——Netflix Hystrix
+	服务网关——Netflix Zuul
+	分布式配置——Spring Cloud Config
+	
+	Eureka：	
+		Eureka服务端：
+			作为服务注册中心，进行微服务的服务治理与服务发现，可以进行高可用的集群配置。
+			主启动类上添加@EnableEurekaServer注解。
+		Eureka客户端：
+			服务提供者在启动时会通过发送rest请求的方式将自己注册到Eureka服务端，同时携带一些服务的元信息过去。
+			服务调用者在启动时除了会发送卡rest请求的方式将自己注册到Eureka服务端之外，还会获取上面注册的服务提供者清单，可以通过Ribbon实现客户端的负载均衡调用。
+			主启动类上添加@EnableEurekaClient注解。
+	
+	Ribbon：
+		在RestTemplate对象上添加@LoadBalanced可以配合开启客户端的负载均衡。
+		RestTemplate中请求方式：
+			GET：
+				getForEntity(String url, Class responseType, Map urlVariables);
+					例如：	Map<String, String> params = new HashMap<>();
+							ResponseEntity<User> responseEntity = restTemplate.getForEntity("http://注册中心中服务提供者名称/user?name={name}", User.class, params);
+				getForObject(String url, Class responseType, Map urlVariables);
+			POST：
+				postForEntity(String url, Object request, Class responseType, Map uriVariables);
+				postForObject(String url, Object request, Class responseType, Map uriVariables);
+		
+	Feign：
+		结合springcloud的eureka、ribbon使用，可提供负载均衡的http客户端。
+		使用：
+			在主启动类上加上@EnableFeignClients注解，然后开出一个接口作为RPC调用的API，类上加上@FeignClient(value="服务提供者名称")注解，然后在接口里面定义类似于controller中的接口方法。
+				@FeignClient(value = "CART")
+				public interface CartFeignClient {
+
+					@PostMapping("/cart/{productId}")
+					Long addCart(@PathVariable("productId")Long productId);
+				}
+			然后在其它类中就可直接注入使用了
+				@Autowired
+				private CartFeignClient cartFeignClient;
+
+				@PostMapping("/toCart/{productId}")
+				public ResponseEntity addCart(@PathVariable("productId") Long productId){
+					Long result = cartFeignClient.addCart(productId);
+					return ResponseEntity.ok(result);
+				}
+		Feign底层默认是使用jdk中的HttpURLConnection发送HTTP请求。
+		
+	Hystrix:
+		服务降级、服务熔断、服务限流。
+		使用：
+			主类上添加@EnableHystrix注解，方法上添加@HystrixCommand()注解配置。例如：
+				@HystrixCommand(fallbackMethod = "payment_timeoutHandler", commandProperties = {
+                        @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "5000") //设置线程隔离超时时间，表示3秒钟以内就是正常的业务逻辑，不执行回调方法
+                    })  //指定服务调用异常时的回调处理方法
+			
+	
+19、使用存储过程？
+	https://blog.csdn.net/dwenxue/article/details/82257944
+	
+			
 		
 		
 		
